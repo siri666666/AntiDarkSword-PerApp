@@ -292,9 +292,9 @@ static inline void ads_present_save_prompt(UIViewController *controller, BOOL fo
         [defaults setBool:NO forKey:@"ADSNeedsRespring"]; [defaults setBool:NO forKey:@"ADSPendingDaemonChanges"]; [defaults synchronize]; ads_post_notification(); return;
     }
     BOOL needsReboot = [defaults boolForKey:@"ADSPendingDaemonChanges"];
-    NSString *title = @"Save"; NSString *msg = needsReboot ? @"Apply changes with a userspace reboot? (Required for daemon changes)" : @"Apply changes with respring?"; NSString *btn = needsReboot ? @"Reboot Userspace" : @"Respring";
+    NSString *title = @"保存更改"; NSString *msg = needsReboot ? @"是否执行 Userspace 重启以应用更改？（Daemon 规则变更需要）" : @"是否执行 Respring 注销以应用更改？"; NSString *btn = needsReboot ? @"重启 Userspace" : @"Respring 注销";
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:msg preferredStyle:UIAlertControllerStyleAlert]; 
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+    [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
         if (cancelAction) cancelAction();
     }]];
     [alert addAction:[UIAlertAction actionWithTitle:btn style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
@@ -326,7 +326,7 @@ static void AltPrefsChangedNotification(CFNotificationCenterRef center, void *ob
     [super viewDidLoad];
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge const void *)(self), (CFNotificationCallback)ProbeCounterNotification, CFSTR("com.eolnmsuk.antidarkswordprefs/counter"), NULL, CFNotificationSuspensionBehaviorCoalesce);
     
-    UIBarButtonItem *saveButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStyleDone target:self action:@selector(savePrompt)]; self.navigationItem.rightBarButtonItem = saveButton;
+    UIBarButtonItem *saveButton = [[UIBarButtonItem alloc] initWithTitle:@"保存" style:UIBarButtonItemStyleDone target:self action:@selector(savePrompt)]; self.navigationItem.rightBarButtonItem = saveButton;
     NSUserDefaults *defaults = ads_defaults(); BOOL isEnabled = [defaults boolForKey:@"enabled"]; BOOL needsRespring = [defaults boolForKey:@"ADSNeedsRespring"]; BOOL needsReboot = [defaults boolForKey:@"ADSPendingDaemonChanges"]; saveButton.enabled = needsRespring || (isEnabled && needsReboot);
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge const void *)(self), (CFNotificationCallback)DaemonPrefsChangedNotification, ADS_NOTIF_SAVED, NULL, CFNotificationSuspensionBehaviorCoalesce);
 }
@@ -345,27 +345,27 @@ static void AltPrefsChangedNotification(CFNotificationCenterRef center, void *ob
         BOOL corelliumEnabled = [defaults boolForKey:@"corelliumDecoyEnabled"];
         NSInteger autoProtectLevel = [defaults integerForKey:@"autoProtectLevel"] ?: 1;
 
-        PSSpecifier *decoyGroup = [PSSpecifier preferenceSpecifierNamed:@"Corellium Honeypot" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
-        [decoyGroup setProperty:@"Spoofs Corellium environment to cause exploits (like Coruna) to self-abort." forKey:@"footerText"]; [specs addObject:decoyGroup];
-        PSSpecifier *decoySpec = [PSSpecifier preferenceSpecifierNamed:@"Enable Corellium Honeypot" target:self set:@selector(setCorelliumEnabled:specifier:) get:@selector(getCorelliumEnabled:) detail:nil cell:PSSwitchCell edit:nil]; [specs addObject:decoySpec];
+        PSSpecifier *decoyGroup = [PSSpecifier preferenceSpecifierNamed:@"Corellium 蜜罐" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
+        [decoyGroup setProperty:@"伪装 Corellium 虚拟环境，诱导漏洞利用（如 Coruna）主动中止。" forKey:@"footerText"]; [specs addObject:decoyGroup];
+        PSSpecifier *decoySpec = [PSSpecifier preferenceSpecifierNamed:@"启用 Corellium 蜜罐" target:self set:@selector(setCorelliumEnabled:specifier:) get:@selector(getCorelliumEnabled:) detail:nil cell:PSSwitchCell edit:nil]; [specs addObject:decoySpec];
 
         BOOL showCounter = [defaults boolForKey:@"countersEnabled"];
         NSInteger probeCount = [defaults integerForKey:@"corelliumProbeCount"];
-        PSSpecifier *counterGroup = [PSSpecifier preferenceSpecifierNamed:@"Attack Statistics" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
-        [counterGroup setProperty:@"Counts Corellium environment probe attempts detected by system daemons." forKey:@"footerText"]; [specs addObject:counterGroup];
-        PSSpecifier *counterToggle = [PSSpecifier preferenceSpecifierNamed:@"Enable Attack Counter" target:self set:@selector(setCountersEnabled:specifier:) get:@selector(getCountersEnabled:) detail:nil cell:PSSwitchCell edit:nil];
+        PSSpecifier *counterGroup = [PSSpecifier preferenceSpecifierNamed:@"攻击探测统计" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
+        [counterGroup setProperty:@"统计系统 Daemon 检测到的 Corellium 环境探测次数。" forKey:@"footerText"]; [specs addObject:counterGroup];
+        PSSpecifier *counterToggle = [PSSpecifier preferenceSpecifierNamed:@"启用探测计数" target:self set:@selector(setCountersEnabled:specifier:) get:@selector(getCountersEnabled:) detail:nil cell:PSSwitchCell edit:nil];
         if (!corelliumEnabled) [counterToggle setProperty:@NO forKey:@"enabled"];
         [specs addObject:counterToggle];
 
         if (showCounter && corelliumEnabled) {
-            NSString *countLabel = (probeCount == 0) ? @"Corellium Probes Detected: None" : [NSString stringWithFormat:@"Corellium Probes Detected: %ld", (long)probeCount];
+            NSString *countLabel = (probeCount == 0) ? @"检测到 Corellium 探测：无" : [NSString stringWithFormat:@"检测到 Corellium 探测：%ld 次", (long)probeCount];
             PSSpecifier *countCell = [PSSpecifier preferenceSpecifierNamed:countLabel target:self set:nil get:nil detail:nil cell:PSStaticTextCell edit:nil]; [specs addObject:countCell];
-            PSSpecifier *resetBtn = [PSSpecifier preferenceSpecifierNamed:@"Reset Counter" target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
+            PSSpecifier *resetBtn = [PSSpecifier preferenceSpecifierNamed:@"重置计数" target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
             resetBtn->action = @selector(resetProbeCounter); [specs addObject:resetBtn];
         }
 
-        PSSpecifier *group = [PSSpecifier preferenceSpecifierNamed:@"System Daemons" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
-        [group setProperty:@"Restricting a daemon bypasses all zero-click mitigations for that process." forKey:@"footerText"]; [specs addObject:group];
+        PSSpecifier *group = [PSSpecifier preferenceSpecifierNamed:@"系统 Daemon 防护" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
+        [group setProperty:@"关闭某个 Daemon 的防护将跳过该进程的零点击漏洞缓解。" forKey:@"footerText"]; [specs addObject:group];
 
         NSArray *daemons = @[@"imagent", @"apsd", @"identityservicesd", @"IMDPersistenceAgent"];
         for (NSString *daemon in daemons) {
@@ -374,10 +374,10 @@ static void AltPrefsChangedNotification(CFNotificationCenterRef center, void *ob
             [specs addObject:spec];
         }
 
-        PSSpecifier *globalGroup = [PSSpecifier preferenceSpecifierNamed:@"⚠︎  Global Rules (BETA) ⚠︎ " target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
-        [globalGroup setProperty:@"Global rules can break almost anything, for advanced users only." forKey:@"footerText"]; [specs addObject:globalGroup];
+        PSSpecifier *globalGroup = [PSSpecifier preferenceSpecifierNamed:@"⚠︎  全局强制规则 (BETA) ⚠︎" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
+        [globalGroup setProperty:@"全局规则可能影响任意 App 的正常功能，仅限高级用户使用。" forKey:@"footerText"]; [specs addObject:globalGroup];
 
-        NSArray *globals = @[ @{@"key": @"globalUASpoofingEnabled", @"label": @"Spoof User Agent"}, @{@"key": @"globalDisableJIT", @"label": @"Block JIT (iOS 16+)"}, @{@"key": @"globalDisableJIT15", @"label": @"Block JIT (Legacy)"}, @{@"key": @"globalDisableJS", @"label": @"Block JavaScript ⚠︎"}, @{@"key": @"globalDisableRTC", @"label": @"Block WebGL & WebRTC"}, @{@"key": @"globalDisableMedia", @"label": @"Block Media Auto-Play"}, @{@"key": @"globalDisableIMessageDL", @"label": @"Block Msg Auto-Download"}, @{@"key": @"globalDisableFileAccess", @"label": @"Block Local File Access"}, @{@"key": @"globalBlockRemoteContent", @"label": @"Block Remote Content"}, @{@"key": @"globalBlockRiskyAttachments", @"label": @"Block Attachment Previews"} ];
+        NSArray *globals = @[ @{@"key": @"globalUASpoofingEnabled", @"label": @"伪装 User-Agent"}, @{@"key": @"globalDisableJIT", @"label": @"禁用 JIT (iOS 16+ 锁定模式)"}, @{@"key": @"globalDisableJIT15", @"label": @"禁用 JIT (旧版 iOS)"}, @{@"key": @"globalDisableJS", @"label": @"禁用 JavaScript ⚠︎"}, @{@"key": @"globalDisableRTC", @"label": @"禁用 WebGL & WebRTC"}, @{@"key": @"globalDisableMedia", @"label": @"禁止媒体自动播放"}, @{@"key": @"globalDisableIMessageDL", @"label": @"禁止 iMessage 自动下载"}, @{@"key": @"globalDisableFileAccess", @"label": @"禁止本地文件访问"}, @{@"key": @"globalBlockRemoteContent", @"label": @"拦截远程内容加载"}, @{@"key": @"globalBlockRiskyAttachments", @"label": @"禁止高危附件预览"} ];
 
         BOOL isIOS16 = ads_is_ios16(); BOOL globalJSEnabled = [defaults boolForKey:@"globalDisableJS"];
         for (NSDictionary *g in globals) {
@@ -450,9 +450,9 @@ static void AltPrefsChangedNotification(CFNotificationCenterRef center, void *ob
 }
 
 - (void)resetProbeCounter {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Reset Counter" message:@"Clear the Corellium probe count?" preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"重置计数" message:@"确定清空 Corellium 探测计数吗？" preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"重置" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
         NSUserDefaults *defaults = ads_defaults(); [defaults setInteger:0 forKey:@"corelliumProbeCount"]; [defaults synchronize];
         dispatch_async(dispatch_get_main_queue(), ^{ [self reloadSpecifiers]; });
     }]];
@@ -466,17 +466,17 @@ static void AltPrefsChangedNotification(CFNotificationCenterRef center, void *ob
     
     if (enabled) {
         NSString *featureName = [specifier name];
-        NSString *msg = [NSString stringWithFormat:@"Enabling '%@' globally applies this mitigation to ALL processes indiscriminately. This may break core functionality across the system and is intended for testing/emergency lockdown only.", featureName];
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Warning" message:msg preferredStyle:UIAlertControllerStyleAlert];
+        NSString *msg = [NSString stringWithFormat:@"全局开启「%@」将无差别作用于所有进程，可能导致系统或 App 核心功能异常，仅建议用于测试或紧急锁定。", featureName];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"高风险警告" message:msg preferredStyle:UIAlertControllerStyleAlert];
         
-        [alert addAction:[UIAlertAction actionWithTitle:@"Enable Globally" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"仍要全局开启" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
             [defaults setBool:YES forKey:key];
             if ([key isEqualToString:@"globalDisableJS"]) { if (ads_is_ios16()) [defaults setBool:YES forKey:@"globalDisableJIT"]; else [defaults setBool:YES forKey:@"globalDisableJIT15"]; }
             [defaults setBool:YES forKey:@"ADSNeedsRespring"]; [defaults synchronize]; ads_post_notification();
             dispatch_async(dispatch_get_main_queue(), ^{ [self reloadSpecifiers]; });
         }]];
         
-        [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) { [self reloadSpecifiers]; }]];
+        [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) { [self reloadSpecifiers]; }]];
         [self presentViewController:alert animated:YES completion:nil];
     } else {
         [defaults setBool:NO forKey:key];
@@ -503,7 +503,7 @@ static void AltPrefsChangedNotification(CFNotificationCenterRef center, void *ob
     AntiDarkSwordPrefsRootListController *rootCtrl = [[AntiDarkSwordPrefsRootListController alloc] init];
     self.cachedPresetApps = [rootCtrl autoProtectedItemsForLevel:level];
     
-    UIBarButtonItem *saveButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStyleDone target:self action:@selector(savePrompt)]; self.navigationItem.rightBarButtonItem = saveButton;
+    UIBarButtonItem *saveButton = [[UIBarButtonItem alloc] initWithTitle:@"保存" style:UIBarButtonItemStyleDone target:self action:@selector(savePrompt)]; self.navigationItem.rightBarButtonItem = saveButton;
     BOOL isEnabled = [defaults boolForKey:@"enabled"]; BOOL needsRespring = [defaults boolForKey:@"ADSNeedsRespring"]; BOOL needsReboot = [defaults boolForKey:@"ADSPendingDaemonChanges"]; saveButton.enabled = needsRespring || (isEnabled && needsReboot);
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge const void *)(self), (CFNotificationCallback)AltPrefsChangedNotification, ADS_NOTIF_SAVED, NULL, CFNotificationSuspensionBehaviorCoalesce);
 }
@@ -569,7 +569,7 @@ static void AppPrefsChangedNotification(CFNotificationCenterRef center, void *ob
 @implementation AntiDarkSwordAppController
 - (void)viewDidLoad {
     [super viewDidLoad];
-    UIBarButtonItem *saveButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStyleDone target:self action:@selector(savePrompt)]; self.navigationItem.rightBarButtonItem = saveButton;
+    UIBarButtonItem *saveButton = [[UIBarButtonItem alloc] initWithTitle:@"保存" style:UIBarButtonItemStyleDone target:self action:@selector(savePrompt)]; self.navigationItem.rightBarButtonItem = saveButton;
     NSUserDefaults *defaults = ads_defaults(); BOOL isEnabled = [defaults boolForKey:@"enabled"]; BOOL needsRespring = [defaults boolForKey:@"ADSNeedsRespring"]; BOOL needsReboot = [defaults boolForKey:@"ADSPendingDaemonChanges"]; saveButton.enabled = needsRespring || (isEnabled && needsReboot);
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge const void *)(self), (CFNotificationCallback)AppPrefsChangedNotification, ADS_NOTIF_SAVED, NULL, CFNotificationSuspensionBehaviorCoalesce);
 }
@@ -701,22 +701,22 @@ static void AppPrefsChangedNotification(CFNotificationCenterRef center, void *ob
 - (NSArray *)specifiers {
     if (!_specifiers) {
         NSMutableArray *specs = [NSMutableArray array]; NSUserDefaults *defaults = ads_defaults();
-        PSSpecifier *enableGroup = [PSSpecifier preferenceSpecifierNamed:@"Rule Status" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
+        PSSpecifier *enableGroup = [PSSpecifier preferenceSpecifierNamed:@"规则状态" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
         [enableGroup setProperty:@"保护强度：全局=跟随总等级；关闭=完全放行(跳过全局)；Lv1=轻量(无锁定模式弹窗)；Lv2=标准(JIT锁定+UA伪装)；Lv3=严格(全开)。" forKey:@"footerText"];
         [specs addObject:enableGroup];
-        PSSpecifier *levelSpec = [PSSpecifier preferenceSpecifierNamed:@"Protection Level" target:self set:@selector(setPerAppLevel:specifier:) get:@selector(getPerAppLevel:) detail:nil cell:PSSegmentCell edit:nil];
+        PSSpecifier *levelSpec = [PSSpecifier preferenceSpecifierNamed:@"保护强度" target:self set:@selector(setPerAppLevel:specifier:) get:@selector(getPerAppLevel:) detail:nil cell:PSSegmentCell edit:nil];
         [levelSpec setValues:@[@(-1), @(0), @(1), @(2), @(3)] titles:@[@"全局", @"关闭", @"Lv1", @"Lv2", @"Lv3"]];
         [specs addObject:levelSpec];
-        PSSpecifier *enableSpec = [PSSpecifier preferenceSpecifierNamed:@"Enable Rule" target:self set:@selector(setMasterEnable:specifier:) get:@selector(getMasterEnable:) detail:nil cell:PSSwitchCell edit:nil]; [specs addObject:enableSpec];
+        PSSpecifier *enableSpec = [PSSpecifier preferenceSpecifierNamed:@"启用此应用规则" target:self set:@selector(setMasterEnable:specifier:) get:@selector(getMasterEnable:) detail:nil cell:PSSwitchCell edit:nil]; [specs addObject:enableSpec];
         
         BOOL isRuleEnabled = [[self getMasterEnable:enableSpec] boolValue];
-        PSSpecifier *featGroup = [PSSpecifier preferenceSpecifierNamed:@"Mitigation Features" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
+        PSSpecifier *featGroup = [PSSpecifier preferenceSpecifierNamed:@"防护细项" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
         NSString *featFooter = (self.isPlugin && !isRuleEnabled)
-            ? @"Inheriting parent app rules. Enable the rule to configure plugin-specific overrides."
-            : @"Features not applicable to this target type, or currently enforced by a Global Rule, are locked.";
+            ? @"当前继承宿主 App 规则。开启规则后可单独覆盖此插件设置。"
+            : @"不适用于当前目标或已被全局规则强制接管的选项处于锁定状态。";
         [featGroup setProperty:featFooter forKey:@"footerText"]; [specs addObject:featGroup];
         
-        NSArray *features = @[ @{@"key": @"spoofUA", @"label": @"Spoof User Agent"}, @{@"key": @"disableJIT", @"label": @"Block JIT (iOS 16+)"}, @{@"key": @"disableJIT15", @"label": @"Block JIT (Legacy)"}, @{@"key": @"disableJS", @"label": @"Block JavaScript ⚠︎"}, @{@"key": @"disableRTC", @"label": @"Block WebGL & WebRTC"}, @{@"key": @"disableMedia", @"label": @"Block Media Auto-Play"}, @{@"key": @"disableIMessageDL", @"label": @"Block Msg Auto-Download"}, @{@"key": @"disableFileAccess", @"label": @"Block Local File Access"}, @{@"key": @"blockRemoteContent", @"label": @"Block Remote Content"}, @{@"key": @"blockRiskyAttachments", @"label": @"Block Attachment Previews"} ];
+        NSArray *features = @[ @{@"key": @"spoofUA", @"label": @"伪装 User-Agent"}, @{@"key": @"disableJIT", @"label": @"禁用 JIT (iOS 16+ 锁定模式)"}, @{@"key": @"disableJIT15", @"label": @"禁用 JIT (旧版 iOS)"}, @{@"key": @"disableJS", @"label": @"禁用 JavaScript ⚠︎"}, @{@"key": @"disableRTC", @"label": @"禁用 WebGL & WebRTC"}, @{@"key": @"disableMedia", @"label": @"禁止媒体自动播放"}, @{@"key": @"disableIMessageDL", @"label": @"禁止 iMessage 自动下载"}, @{@"key": @"disableFileAccess", @"label": @"禁止本地文件访问"}, @{@"key": @"blockRemoteContent", @"label": @"拦截远程内容加载"}, @{@"key": @"blockRiskyAttachments", @"label": @"禁止高危附件预览"} ];
         
         NSString *dictKey = [NSString stringWithFormat:@"TargetRules_%@", self.targetID]; NSDictionary *rules = [defaults dictionaryForKey:dictKey]; BOOL isIOS16 = ads_is_ios16();
         BOOL isJSTurnedOn = (rules && rules[@"disableJS"] != nil) ? [rules[@"disableJS"] boolValue] : (!isIOS16 && [AntiDarkSwordAppController isApplicableFeature:@"disableJS" forTarget:self.targetID]);
@@ -743,9 +743,9 @@ static void AppPrefsChangedNotification(CFNotificationCenterRef center, void *ob
         // letting the user configure per-plugin rules independently of the parent app.
         NSArray<NSDictionary *> *plugins = ads_plugins_for_bundle_id(self.targetID);
         if (plugins.count > 0) {
-            PSSpecifier *pluginGroup = [PSSpecifier preferenceSpecifierNamed:@"App Plugins"
+            PSSpecifier *pluginGroup = [PSSpecifier preferenceSpecifierNamed:@"应用扩展插件"
                 target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil];
-            [pluginGroup setProperty:@"Security rules for this app's extension processes. Plugins inherit the parent app's rules unless overridden here."
+            [pluginGroup setProperty:@"该 App 的扩展进程安全规则。默认继承宿主 App 设置，可在此单独覆盖。"
                              forKey:@"footerText"];
             [specs addObject:pluginGroup];
 
@@ -753,10 +753,10 @@ static void AppPrefsChangedNotification(CFNotificationCenterRef center, void *ob
             static dispatch_once_t catOnce;
             dispatch_once(&catOnce, ^{
                 categoryLabels = @{
-                    @"com.apple.usernotifications.service":          @"Notification Service",
-                    @"com.apple.usernotifications.content-extension":@"Notification Content",
-                    @"com.apple.share-services":                     @"Share Extension",
-                    @"com.apple.message-payload-provider":           @"iMessage App Extension"
+                    @"com.apple.usernotifications.service":          @"通知服务扩展",
+                    @"com.apple.usernotifications.content-extension":@"通知内容扩展",
+                    @"com.apple.share-services":                     @"分享扩展",
+                    @"com.apple.message-payload-provider":           @"iMessage 扩展"
                 };
             });
 
@@ -1178,13 +1178,13 @@ static UIImage *ads_info_emoji_image(NSString *emoji) {
             if ([[s propertyForKey:@"id"] isEqualToString:@"SelectApps"]) s.detailControllerClass = [AntiDarkSwordAltListController class];
             if ([s.identifier isEqualToString:@"PresetRulesGroup"]) {
                 NSString *footerText = @"";
-                if (autoProtectLevel == 1) footerText = @"Level 1: Protects native Apple applications, including Safari, Messages, Mail, Notes, Calendar, Wallet, and other built-in iOS apps.";
-                else if (autoProtectLevel == 2) footerText = @"Level 2: Expands protection to major 3rd-party web browsers, email clients, messaging platforms, social media apps, package managers, and finance/crypto apps.";
-                else if (autoProtectLevel == 3) footerText = @"Level 3: Choose the Corellium Honeypot and system daemon protections in Level 3 Settings.";
+                if (autoProtectLevel == 1) footerText = @"Lv1：防护苹果原生应用（Safari、信息、邮件、备忘录、图书、钱包等系统内置 App）。";
+                else if (autoProtectLevel == 2) footerText = @"Lv2：扩展防护至主流第三方浏览器、邮件、聊天（微信/Telegram 等）、社交、包管理器及金融/加密 App。";
+                else if (autoProtectLevel == 3) footerText = @"Lv3：解锁 Level 3 高级设置（Corellium 蜜罐、系统 Daemon 防护及全局强制规则）。";
                 [s setProperty:footerText forKey:@"footerText"];
             }
             if ([[s propertyForKey:@"id"] isEqualToString:@"SystemOptionsCell"]) {
-                if (autoProtectLevel < 3) { [s setProperty:@NO forKey:@"enabled"]; s.name = @"🔒  Level 3 Settings"; } else { [s setProperty:@YES forKey:@"enabled"]; s.name = @"⚙️  Level 3 Settings"; }
+                if (autoProtectLevel < 3) { [s setProperty:@NO forKey:@"enabled"]; s.name = @"🔒  Level 3 高级设置"; } else { [s setProperty:@YES forKey:@"enabled"]; s.name = @"⚙️  Level 3 高级设置"; }
             }
             if ([[s propertyForKey:@"id"] isEqualToString:@"FooterGroup"]) {
                 NSString *osVersion = [[UIDevice currentDevice] systemVersion]; NSString *version = ADSInstalledPreferencesVersion([AntiDarkSwordPrefsRootListController class]) ?: @"Unavailable";
@@ -1195,7 +1195,7 @@ static UIImage *ads_info_emoji_image(NSString *emoji) {
         }
         NSUInteger insertIndexAuto = [specs indexOfObjectPassingTest:^BOOL(PSSpecifier *obj, NSUInteger idx, BOOL *stop) { return [[obj propertyForKey:@"id"] isEqualToString:@"AutoProtectLevelSegment"]; }];
         if (insertIndexAuto != NSNotFound) {
-            insertIndexAuto++; PSSpecifier *groupSpec = [PSSpecifier preferenceSpecifierNamed:@"Current Preset Rules" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil]; [specs insertObject:groupSpec atIndex:insertIndexAuto++];
+            insertIndexAuto++; PSSpecifier *groupSpec = [PSSpecifier preferenceSpecifierNamed:@"当前预设防护应用" target:self set:nil get:nil detail:nil cell:PSGroupCell edit:nil]; [specs insertObject:groupSpec atIndex:insertIndexAuto++];
             NSArray *autoItems = [self autoProtectedItemsForLevel:autoProtectLevel];
             for (NSString *item in autoItems) {
                 if (![self isTargetInstalled:item]) continue; 
@@ -1222,7 +1222,7 @@ static UIImage *ads_info_emoji_image(NSString *emoji) {
     [super viewDidLoad]; NSUserDefaults *defaults = ads_defaults();
     ads_migrate_prefs_if_needed();
     NSInteger currentLevel = [defaults objectForKey:@"autoProtectLevel"] ? [defaults integerForKey:@"autoProtectLevel"] : 1; [self populateDefaultRulesForLevel:currentLevel force:NO];
-    UIBarButtonItem *saveButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStyleDone target:self action:@selector(savePrompt)]; self.navigationItem.rightBarButtonItem = saveButton;
+    UIBarButtonItem *saveButton = [[UIBarButtonItem alloc] initWithTitle:@"保存" style:UIBarButtonItemStyleDone target:self action:@selector(savePrompt)]; self.navigationItem.rightBarButtonItem = saveButton;
     BOOL isEnabled = [defaults boolForKey:@"enabled"]; BOOL needsRespring = [defaults boolForKey:@"ADSNeedsRespring"]; BOOL needsReboot = [defaults boolForKey:@"ADSPendingDaemonChanges"]; saveButton.enabled = needsRespring || (isEnabled && needsReboot);
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge const void *)(self), (CFNotificationCallback)PrefsChangedNotification, ADS_NOTIF_SAVED, NULL, CFNotificationSuspensionBehaviorCoalesce); [self setupHeaderView];
 }
@@ -1301,7 +1301,7 @@ static UIImage *ads_info_emoji_image(NSString *emoji) {
     [defaults synchronize]; [self flagSaveRequirement]; ads_post_notification(); dispatch_async(dispatch_get_main_queue(), ^{ self->_specifiers = nil; [self reloadSpecifiers]; });
 }
 - (void)addCustomID {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Add Custom ID" message:@"Enter bundle IDs or process names (comma-separated)" preferredStyle:UIAlertControllerStyleAlert]; [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) { textField.placeholder = @"com.apple.imagent, apsd"; }]; [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]]; [alert addAction:[UIAlertAction actionWithTitle:@"Add" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"添加自定义目标" message:@"输入 Bundle ID 或进程名（多个用英文逗号分隔）" preferredStyle:UIAlertControllerStyleAlert]; [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) { textField.placeholder = @"com.apple.imagent, apsd"; }]; [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil]]; [alert addAction:[UIAlertAction actionWithTitle:@"添加" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         NSString *inputText = alert.textFields.firstObject.text;
         if (inputText.length > 0) {
             NSArray *inputIDs = [inputText componentsSeparatedByString:@","]; NSUserDefaults *defaults = ads_defaults(); NSMutableArray *customIDs = [[defaults objectForKey:@"customDaemonIDs"] ?: @[] mutableCopy]; NSMutableArray *activeCustom = [[defaults objectForKey:@"activeCustomDaemonIDs"] ?: customIDs mutableCopy]; BOOL changesMade = NO;
@@ -1318,7 +1318,7 @@ static UIImage *ads_info_emoji_image(NSString *emoji) {
     }
 }
 - (void)resetToDefaults {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Reset to Defaults" message:@"Userspace reboot required to completely flush daemon hooks." preferredStyle:UIAlertControllerStyleAlert]; [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]]; [alert addAction:[UIAlertAction actionWithTitle:@"Reboot Userspace" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"重置为默认设置" message:@"需要执行 Userspace 重启以彻底清除 Daemon 注入状态。" preferredStyle:UIAlertControllerStyleAlert]; [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil]]; [alert addAction:[UIAlertAction actionWithTitle:@"重启 Userspace" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
         pid_t pid; NSString *launchctl = ADSLaunchctlPath(); NSString *plistPath = ADSBootstrapArgument(ads_root_path(@"/Library/LaunchDaemons/c.eolnmsuk.corelliumdecoy.plist")); const char* unloadArgs[] = {"launchctl", "unload", plistPath.UTF8String, NULL}; if (posix_spawn(&pid, launchctl.UTF8String, NULL, NULL, (char* const*)unloadArgs, NULL) == 0) waitpid(pid, NULL, 0);
         NSUserDefaults *defaults = ads_defaults(); [defaults removePersistentDomainForName:ADS_PREFS_SUITE]; [defaults synchronize]; ads_post_notification(); const char* rebootArgs[] = {"launchctl", "reboot", "userspace", NULL}; posix_spawn(&pid, launchctl.UTF8String, NULL, NULL, (char* const*)rebootArgs, NULL);
     }]]; [self presentViewController:alert animated:YES completion:nil];

@@ -8,7 +8,7 @@
             <key>cell</key>
             <string>PSGroupCell</string>
             <key>label</key>
-            <string>Master Control</string>
+            <string>总开关</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -20,7 +20,7 @@
             <key>key</key>
             <string>enabled</string>
             <key>label</key>
-            <string>Enable Protection</string>
+            <string>启用防护</string>
             <key>set</key>
             <string>setEnableProtection:specifier:</string>
             <key>PostNotification</key>
@@ -33,7 +33,7 @@
             <key>id</key>
             <string>UserAgentGroup</string>
             <key>label</key>
-            <string>User Agent Configuration</string>
+            <string>User-Agent 配置</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -47,10 +47,10 @@
             <key>key</key>
             <string>selectedUAPreset</string>
             <key>label</key>
-            <string>Select UA</string>
+            <string>选择 UA</string>
             <key>validTitles</key>
             <array>
-                <string>iPhone (18.1) - Default</string>
+                <string>iPhone (18.1) - 默认</string>
                 <string>iPhone (17.6.1)</string>
                 <string>iPhone (16.7.8)</string>
                 <string>iPhone (15.8.2)</string>
@@ -58,7 +58,7 @@
                 <string>Android (Chrome)</string>
                 <string>Windows (Edge)</string>
                 <string>Mac (macOS 14.5)</string>
-                <string>Custom String</string>
+                <string>自定义 UA</string>
             </array>
             <key>validValues</key>
             <array>
@@ -87,9 +87,9 @@
             <key>key</key>
             <string>customUAString</string>
             <key>label</key>
-            <string>Custom</string>
+            <string>自定义</string>
             <key>placeholder</key>
-            <string>Type manual UA here...</string>
+            <string>输入自定义 User-Agent...</string>
             <key>returnKeyType</key>
             <integer>9</integer>
             <key>noAutoCorrect</key>
@@ -104,7 +104,7 @@
             <key>id</key>
             <string>PresetRulesGroup</string>
             <key>label</key>
-            <string>Preset Rules</string>
+            <string>预设规则</string>
         </dict>
 
         <dict>
@@ -113,7 +113,7 @@
             <key>id</key>
             <string>SystemOptionsCell</string>
             <key>label</key>
-            <string>⚙️  Advanced Options</string>
+            <string>⚙️  Level 3 高级设置</string>
             <key>detail</key>
             <string>AntiDarkSwordDaemonListController</string>
             <key>isController</key>
@@ -139,9 +139,9 @@
             </array>
             <key>validTitles</key>
             <array>
-                <string>Level 1</string>
-                <string>Level 2</string>
-                <string>Level 3</string>
+                <string>Lv1</string>
+                <string>Lv2</string>
+                <string>Lv3</string>
             </array>
             <key>set</key>
             <string>setAutoProtectLevel:specifier:</string>
@@ -153,7 +153,7 @@
             <key>id</key>
             <string>AppPermissionsGroup</string>
             <key>label</key>
-            <string>Custom Rules</string>
+            <string>自定义规则</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -171,7 +171,7 @@
             <key>ALChangeNotification</key>
             <string>com.eolnmsuk.antidarkswordprefs/saved</string>
             <key>label</key>
-            <string>Select Apps...</string>
+            <string>选择应用...</string>
             <key>sections</key>
             <array>
                 <dict>
@@ -195,7 +195,7 @@
             <key>cell</key>
             <string>PSButtonCell</string>
             <key>label</key>
-            <string>Add Custom Bundle ID / Process</string>
+            <string>添加自定义 Bundle ID / 进程</string>
             <key>action</key>
             <string>addCustomID</string>
             <key>id</key>
@@ -208,13 +208,13 @@
             <key>id</key>
             <string>InfoGroup</string>
             <key>label</key>
-            <string>Info</string>
+            <string>关于</string>
         </dict>
         <dict>
             <key>cell</key>
             <string>PSButtonCell</string>
             <key>label</key>
-            <string>Updates</string>
+            <string>检查更新</string>
             <key>action</key>
             <string>checkForUpdates</string>
             <key>id</key>
@@ -240,7 +240,7 @@
             <key>cell</key>
             <string>PSButtonCell</string>
             <key>label</key>
-            <string>Donate</string>
+            <string>赞助支持</string>
             <key>action</key>
             <string>presentDonationMenu</string>
         </dict>
@@ -248,7 +248,7 @@
             <key>cell</key>
             <string>PSLinkCell</string>
             <key>label</key>
-            <string>Credits</string>
+            <string>致谢名单</string>
             <key>detail</key>
             <string>AntiDarkSwordCreditsController</string>
         </dict>
@@ -261,7 +261,7 @@
             <key>cell</key>
             <string>PSButtonCell</string>
             <key>label</key>
-            <string>Reset Settings to Default</string>
+            <string>重置为默认设置</string>
             <key>action</key>
             <string>resetToDefaults</string>
             <key>isDestructive</key>
