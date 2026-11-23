@@ -2,6 +2,10 @@
 #import <Preferences/PSListController.h>
 #import <Preferences/PSSpecifier.h>
 #import <Preferences/PSTableCell.h>
+
+@interface PSSpecifier (ADSSegment)
+- (void)setValues:(NSArray *)values titles:(NSArray *)titles;
+@end
 #import <UIKit/UIKit.h>
 #import <spawn.h>
 #import <sys/types.h>
